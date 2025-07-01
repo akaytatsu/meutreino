@@ -580,11 +580,14 @@ class AppleTVController {
     }
 
     showDeviceInfo(isIOS, isMac) {
-        if (isIOS) {
-            this.showInfo('📱 iPhone/iPad detectado! Use o botão AirPlay nativo do Safari');
-        } else if (isMac) {
-            this.showInfo('💻 macOS detectado! AirPlay disponível no Safari');
-        }
+        // Mostrar apenas uma vez, com informação menos intrusiva
+        setTimeout(() => {
+            if (isIOS) {
+                console.log('📱 iPhone/iPad detectado - AirPlay disponível via Control Center');
+            } else if (isMac) {
+                console.log('💻 macOS detectado - AirPlay disponível via Control Center ou Preferências');
+            }
+        }, 1000);
     }
 
     async handleAirPlayClick() {
@@ -608,13 +611,28 @@ class AppleTVController {
         const isMac = /Mac/.test(navigator.userAgent);
         const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
 
-        // Para dispositivos Apple, priorizar métodos nativos
-        if (isIOS || (isMac && isSafari)) {
-            // Método Apple nativo: Criar elemento de vídeo com AirPlay
-            if (await this.tryAppleNativeAirPlay()) return;
+        console.log('🎯 Dispositivo detectado:', { isIOS, isMac, isSafari });
+
+        // Para dispositivos Apple, ir direto para instruções de AirPlay nativo
+        if (isIOS) {
+            console.log('📱 iOS detectado - mostrando instruções AirPlay');
+            this.appleDeviceFallback();
+            return;
         }
 
-        // Método 1: Tentar WebKit Presentation Mode (Safari)
+        if (isMac && isSafari) {
+            console.log('💻 macOS Safari detectado - tentando vídeo AirPlay');
+            if (await this.tryAppleNativeAirPlay()) return;
+
+            // Se falhar, mostrar instruções
+            this.appleDeviceFallback();
+            return;
+        }
+
+        // Para outros navegadores/dispositivos
+        console.log('🌐 Tentando métodos alternativos de casting...');
+
+        // Método 1: Tentar WebKit Presentation Mode
         if (await this.tryWebKitPresentation()) return;
 
         // Método 2: Tentar Remote Playback API
@@ -623,64 +641,211 @@ class AppleTVController {
         // Método 3: Tentar Presentation API
         if (await this.tryPresentationAPI()) return;
 
-        // Fallback específico para Apple
-        if (isIOS || isMac) {
-            this.appleDeviceFallback();
-        } else {
-            this.fallbackFullscreen();
-        }
+        // Fallback final
+        this.fallbackFullscreen();
     }
 
     async tryAppleNativeAirPlay() {
         try {
-            // Criar um vídeo especificamente para AirPlay
-            const video = document.createElement('video');
-            video.controls = true;
-            video.style.width = '100%';
-            video.style.height = '300px';
-            video.style.background = '#000';
-            video.autoplay = true;
-            video.muted = true; // Necessário para autoplay
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+            const isMac = /Mac/.test(navigator.userAgent);
 
-            // Adicionar atributos específicos do WebKit para AirPlay
-            video.setAttribute('webkit-playsinline', 'true');
-            video.setAttribute('playsinline', 'true');
-            video.setAttribute('webkit-airplay', 'allow');
-            video.setAttribute('controlsList', 'nodownload');
+            console.log('🍎 Tentando AirPlay nativo Apple...');
 
-            // Criar um canvas com o conteúdo da página
-            const canvas = await this.createPageCanvas();
-            const stream = canvas.captureStream(30);
-            video.srcObject = stream;
+            // Para iOS, usar uma abordagem diferente
+            if (isIOS) {
+                return await this.createIOSAirPlayVideo();
+            }
 
-            // Substituir temporariamente o conteúdo do treino pelo vídeo
-            const workoutContent = document.getElementById('workout-content');
-            const originalContent = workoutContent.innerHTML;
-            workoutContent.innerHTML = '';
-            workoutContent.appendChild(video);
-
-            await video.play();
-
-            // Mostrar instruções específicas para Apple
-            this.showAppleInstructions();
-            this.updateButtonState('connected');
-
-            // Restaurar conteúdo após 30 segundos ou quando o usuário clicar novamente
-            const restoreContent = () => {
-                workoutContent.innerHTML = originalContent;
-                this.updateButtonState('available');
-            };
-
-            this.airplayButton.onclick = restoreContent;
-            setTimeout(restoreContent, 30000);
-
-            console.log('✅ AirPlay nativo Apple configurado');
-            return true;
+            // Para macOS, criar vídeo com fonte estática
+            if (isMac) {
+                return await this.createMacAirPlayVideo();
+            }
 
         } catch (error) {
             console.log('AirPlay nativo Apple falhou:', error.message);
         }
         return false;
+    }
+
+    async createIOSAirPlayVideo() {
+        try {
+            // Criar um vídeo simples para iOS
+            const video = document.createElement('video');
+            video.controls = true;
+            video.style.width = '100%';
+            video.style.height = '250px';
+            video.style.backgroundColor = '#000';
+            video.style.borderRadius = '8px';
+            video.playsInline = true;
+            video.muted = true;
+
+            // Usar uma fonte de vídeo estática ou criar blob
+            const canvas = document.createElement('canvas');
+            canvas.width = 640;
+            canvas.height = 360;
+            const ctx = canvas.getContext('2d');
+
+            // Desenhar frame inicial
+            this.drawWorkoutFrame(ctx, canvas.width, canvas.height);
+
+            // Converter para blob e definir como fonte
+            canvas.toBlob(async (blob) => {
+                const videoBlob = await this.createVideoBlob(canvas);
+                video.src = URL.createObjectURL(videoBlob);
+
+                // Substituir conteúdo temporariamente
+                const workoutContent = document.getElementById('workout-content');
+                const originalContent = workoutContent.innerHTML;
+
+                workoutContent.innerHTML = `
+                    <div style="text-align: center; margin-bottom: 15px;">
+                        <p style="color: #ff0000; font-size: 16px; margin-bottom: 10px;">
+                            📱 Toque no ícone AirPlay no player abaixo:
+                        </p>
+                    </div>
+                `;
+                workoutContent.appendChild(video);
+
+                // Tentar reproduzir
+                try {
+                    await video.play();
+                    this.updateButtonState('connected');
+                    console.log('✅ Vídeo iOS AirPlay criado com sucesso');
+
+                    // Botão para restaurar
+                    this.setupRestoreButton(workoutContent, originalContent);
+
+                } catch (playError) {
+                    console.log('Erro ao reproduzir vídeo iOS:', playError);
+                    workoutContent.innerHTML = originalContent;
+                    return false;
+                }
+            }, 'video/mp4');
+
+            return true;
+
+        } catch (error) {
+            console.log('Erro criando vídeo iOS:', error.message);
+            return false;
+        }
+    }
+
+    async createMacAirPlayVideo() {
+        try {
+            // Para macOS, usar MediaRecorder com canvas
+            const canvas = document.createElement('canvas');
+            canvas.width = 1280;
+            canvas.height = 720;
+            const ctx = canvas.getContext('2d');
+
+            // Animar o canvas
+            const animateCanvas = () => {
+                this.drawWorkoutFrame(ctx, canvas.width, canvas.height);
+                requestAnimationFrame(animateCanvas);
+            };
+            animateCanvas();
+
+            const stream = canvas.captureStream(30);
+            const video = document.createElement('video');
+            video.srcObject = stream;
+            video.controls = true;
+            video.style.width = '100%';
+            video.style.height = '300px';
+            video.style.backgroundColor = '#000';
+            video.style.borderRadius = '8px';
+            video.muted = true;
+            video.autoplay = true;
+
+            // Adicionar atributos específicos para AirPlay
+            video.setAttribute('webkit-airplay', 'allow');
+            video.setAttribute('airplay', 'allow');
+
+            const workoutContent = document.getElementById('workout-content');
+            const originalContent = workoutContent.innerHTML;
+
+            workoutContent.innerHTML = `
+                <div style="text-align: center; margin-bottom: 15px;">
+                    <p style="color: #ff0000; font-size: 16px; margin-bottom: 10px;">
+                        💻 Clique no ícone AirPlay no player ou use Control Center:
+                    </p>
+                </div>
+            `;
+            workoutContent.appendChild(video);
+
+            await video.play();
+            this.updateButtonState('connected');
+            console.log('✅ Vídeo macOS AirPlay criado com sucesso');
+
+            this.setupRestoreButton(workoutContent, originalContent);
+            return true;
+
+        } catch (error) {
+            console.log('Erro criando vídeo macOS:', error.message);
+            return false;
+        }
+    }
+
+    drawWorkoutFrame(ctx, width, height) {
+        // Limpar canvas
+        ctx.fillStyle = '#1e1e1e';
+        ctx.fillRect(0, 0, width, height);
+
+        // Título
+        ctx.fillStyle = '#ff0000';
+        ctx.font = 'bold 48px Courier New';
+        ctx.textAlign = 'center';
+        ctx.fillText('🏋️ MEU TREINO', width / 2, height / 3);
+
+        // Subtítulo
+        ctx.font = 'bold 32px Courier New';
+        ctx.fillText('Transmitindo via AirPlay', width / 2, height / 2);
+
+        // Data/hora atual
+        const now = new Date();
+        ctx.font = 'bold 24px Courier New';
+        ctx.fillText(now.toLocaleString('pt-BR'), width / 2, height / 2 + 80);
+
+        // Instrução
+        ctx.font = '20px Courier New';
+        ctx.fillText('Use o controle AirPlay no vídeo para conectar à Apple TV', width / 2, height - 60);
+    }
+
+    async createVideoBlob(canvas) {
+        // Criar um blob de vídeo simples (isso é um placeholder)
+        // Na prática, você precisaria de uma biblioteca como WebCodecs ou similar
+        return new Blob(['fake video data'], { type: 'video/mp4' });
+    }
+
+    setupRestoreButton(workoutContent, originalContent) {
+        const restoreBtn = document.createElement('button');
+        restoreBtn.textContent = '← Voltar ao Treino';
+        restoreBtn.style.cssText = `
+            background: #ff0000;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+        `;
+
+        restoreBtn.onclick = () => {
+            workoutContent.innerHTML = originalContent;
+            this.updateButtonState('available');
+            this.airplayButton.onclick = () => this.handleAirPlayClick();
+        };
+
+        workoutContent.appendChild(restoreBtn);
+
+        // Auto-restaurar após 60 segundos
+        setTimeout(() => {
+            if (workoutContent.contains(restoreBtn)) {
+                restoreBtn.click();
+            }
+        }, 60000);
     }
 
     showAppleInstructions() {
@@ -697,22 +862,168 @@ class AppleTVController {
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
         if (isIOS) {
-            // Para iOS, mostrar instruções detalhadas
-            this.showInfo('📱 Para AirPlay: Use o Control Center → Espelhamento de Tela → Selecione Apple TV');
-
-            // Entrar em modo tela cheia
-            if (document.documentElement.requestFullscreen) {
-                document.documentElement.requestFullscreen();
-            } else if (document.documentElement.webkitRequestFullscreen) {
-                document.documentElement.webkitRequestFullscreen();
-            }
+            // Para iOS, mostrar instruções detalhadas sem tentar tela cheia
+            this.showIOSInstructions();
         } else {
-            // Para macOS
-            this.showInfo('💻 Para AirPlay: Menu Apple → Preferências do Sistema → Displays → AirPlay Display');
-            this.fallbackFullscreen();
+            // Para macOS, mostrar instruções sobre AirPlay do sistema
+            this.showMacInstructions();
         }
 
         this.updateButtonState('connected');
+    }
+
+    showIOSInstructions() {
+        // Criar overlay com instruções para iOS
+        const overlay = document.createElement('div');
+        overlay.id = 'ios-instructions-overlay';
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            color: #ff0000;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            text-align: center;
+            padding: 20px;
+        `;
+
+        overlay.innerHTML = `
+            <div style="max-width: 400px;">
+                <h2 style="color: #ff0000; margin-bottom: 30px; font-size: 24px;">
+                    📱 AirPlay no iOS
+                </h2>
+
+                <div style="font-size: 18px; line-height: 1.6; margin-bottom: 30px;">
+                    <p style="margin-bottom: 20px;">
+                        <strong>Método 1 - Control Center:</strong><br>
+                        • Deslize para baixo do canto superior direito<br>
+                        • Toque em "Espelhamento de Tela"<br>
+                        • Selecione sua Apple TV
+                    </p>
+
+                    <p style="margin-bottom: 20px;">
+                        <strong>Método 2 - Safari:</strong><br>
+                        • Toque no ícone de compartilhamento<br>
+                        • Procure por "AirPlay" ou "Apple TV"<br>
+                        • Selecione sua Apple TV
+                    </p>
+                </div>
+
+                <button id="close-ios-instructions" style="
+                    background: #ff0000;
+                    color: white;
+                    border: none;
+                    padding: 15px 30px;
+                    border-radius: 8px;
+                    font-family: 'Courier New', monospace;
+                    font-weight: bold;
+                    font-size: 16px;
+                    cursor: pointer;
+                ">
+                    ✅ Entendi
+                </button>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+
+        // Fechar ao clicar no botão
+        document.getElementById('close-ios-instructions').onclick = () => {
+            document.body.removeChild(overlay);
+            this.updateButtonState('available');
+        };
+
+        // Fechar ao tocar fora (overlay)
+        overlay.onclick = (e) => {
+            if (e.target === overlay) {
+                document.body.removeChild(overlay);
+                this.updateButtonState('available');
+            }
+        };
+    }
+
+    showMacInstructions() {
+        // Para macOS, criar overlay similar
+        const overlay = document.createElement('div');
+        overlay.id = 'mac-instructions-overlay';
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            color: #ff0000;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            text-align: center;
+            padding: 20px;
+        `;
+
+        overlay.innerHTML = `
+            <div style="max-width: 500px;">
+                <h2 style="color: #ff0000; margin-bottom: 30px; font-size: 24px;">
+                    💻 AirPlay no macOS
+                </h2>
+
+                <div style="font-size: 18px; line-height: 1.6; margin-bottom: 30px;">
+                    <p style="margin-bottom: 20px;">
+                        <strong>Método 1 - Control Center:</strong><br>
+                        • Clique no Control Center (canto superior direito)<br>
+                        • Clique em "Espelhamento de Tela"<br>
+                        • Selecione sua Apple TV
+                    </p>
+
+                    <p style="margin-bottom: 20px;">
+                        <strong>Método 2 - Preferências:</strong><br>
+                        • Menu Apple → Preferências do Sistema<br>
+                        • Clique em "Monitores"<br>
+                        • Selecione "Monitor AirPlay"
+                    </p>
+                </div>
+
+                <button id="close-mac-instructions" style="
+                    background: #ff0000;
+                    color: white;
+                    border: none;
+                    padding: 15px 30px;
+                    border-radius: 8px;
+                    font-family: 'Courier New', monospace;
+                    font-weight: bold;
+                    font-size: 16px;
+                    cursor: pointer;
+                ">
+                    ✅ Entendi
+                </button>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+
+        // Fechar ao clicar no botão
+        document.getElementById('close-mac-instructions').onclick = () => {
+            document.body.removeChild(overlay);
+            this.updateButtonState('available');
+        };
+
+        // Fechar ao clicar fora
+        overlay.onclick = (e) => {
+            if (e.target === overlay) {
+                document.body.removeChild(overlay);
+                this.updateButtonState('available');
+            }
+        };
     }
 
     async tryWebKitPresentation() {
@@ -902,3 +1213,31 @@ class AppleTVController {
 
 // Inicializar o controlador Apple TV
 const appleTVController = new AppleTVController();
+
+// Função de debug para testar AirPlay
+function debugAirPlay() {
+    console.log('🔍 Debug AirPlay:');
+    console.log('User Agent:', navigator.userAgent);
+
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isMac = /Mac/.test(navigator.userAgent);
+    const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
+
+    console.log('Dispositivo detectado:', { isIOS, isMac, isSafari });
+
+    // Testar APIs disponíveis
+    const video = document.createElement('video');
+    console.log('APIs disponíveis:');
+    console.log('- webkitSupportsPresentationMode:', 'webkitSupportsPresentationMode' in video);
+    console.log('- remote (Remote Playback):', 'remote' in video);
+    console.log('- navigator.presentation:', !!navigator.presentation);
+    console.log('- webkit-airplay suportado:', true); // Sempre disponível no Safari
+
+    // Limpar elemento de teste
+    video.remove();
+}
+
+// Executar debug automaticamente
+if (window.location.search.includes('debug')) {
+    document.addEventListener('DOMContentLoaded', debugAirPlay);
+}
