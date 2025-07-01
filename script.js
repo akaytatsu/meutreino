@@ -537,3 +537,253 @@ document.addEventListener('click', function() {
         clickCount = 0;
     }, 1000);
 });
+
+// Funcionalidade Apple TV / AirPlay
+class AppleTVController {
+    constructor() {
+        this.isConnected = false;
+        this.airplayButton = null;
+        this.init();
+    }
+
+    init() {
+        // Aguardar o DOM carregar
+        document.addEventListener('DOMContentLoaded', () => {
+            this.airplayButton = document.getElementById('airplay-btn');
+            if (this.airplayButton) {
+                this.airplayButton.addEventListener('click', () => this.handleAirPlayClick());
+                this.checkAirPlaySupport();
+            }
+        });
+    }
+
+    checkAirPlaySupport() {
+        // Verificar se o navegador suporta WebKit Presentation API ou Remote Playback API
+        if ('webkitSupportsPresentationMode' in HTMLVideoElement.prototype ||
+            'remote' in HTMLVideoElement.prototype ||
+            navigator.presentation) {
+            console.log('✅ AirPlay/Casting suportado');
+            this.updateButtonState('available');
+        } else {
+            console.log('❌ AirPlay/Casting não suportado neste navegador');
+            this.updateButtonState('unsupported');
+        }
+    }
+
+    async handleAirPlayClick() {
+        if (!this.airplayButton) return;
+
+        try {
+            this.updateButtonState('connecting');
+
+            // Tentar diferentes métodos de casting
+            await this.attemptCasting();
+
+        } catch (error) {
+            console.error('Erro ao conectar com Apple TV:', error);
+            this.showError('Erro ao conectar com Apple TV');
+            this.updateButtonState('available');
+        }
+    }
+
+    async attemptCasting() {
+        // Método 1: Tentar WebKit Presentation Mode (Safari)
+        if (await this.tryWebKitPresentation()) return;
+
+        // Método 2: Tentar Remote Playback API
+        if (await this.tryRemotePlayback()) return;
+
+        // Método 3: Tentar Presentation API
+        if (await this.tryPresentationAPI()) return;
+
+        // Fallback: Abrir em tela cheia como alternativa
+        this.fallbackFullscreen();
+    }
+
+    async tryWebKitPresentation() {
+        try {
+            // Criar um elemento de vídeo invisível para o AirPlay
+            const video = document.createElement('video');
+            video.style.position = 'absolute';
+            video.style.opacity = '0';
+            video.style.pointerEvents = 'none';
+            document.body.appendChild(video);
+
+            if ('webkitSupportsPresentationMode' in video &&
+                video.webkitSupportsPresentationMode('picture-in-picture')) {
+
+                // Criar um canvas com o conteúdo da página
+                const canvas = await this.createPageCanvas();
+                const stream = canvas.captureStream(30);
+                video.srcObject = stream;
+
+                await video.play();
+                video.webkitSetPresentationMode('picture-in-picture');
+
+                this.updateButtonState('connected');
+                console.log('✅ Conectado via WebKit Presentation');
+                return true;
+            }
+        } catch (error) {
+            console.log('WebKit Presentation não disponível:', error.message);
+        }
+        return false;
+    }
+
+    async tryRemotePlayback() {
+        try {
+            const video = document.createElement('video');
+            if (video.remote) {
+                const canvas = await this.createPageCanvas();
+                const stream = canvas.captureStream(30);
+                video.srcObject = stream;
+
+                await video.play();
+                await video.remote.prompt();
+
+                this.updateButtonState('connected');
+                console.log('✅ Conectado via Remote Playback');
+                return true;
+            }
+        } catch (error) {
+            console.log('Remote Playback não disponível:', error.message);
+        }
+        return false;
+    }
+
+    async tryPresentationAPI() {
+        try {
+            if (navigator.presentation && navigator.presentation.defaultRequest) {
+                const presentationRequest = new PresentationRequest([window.location.href]);
+                const connection = await presentationRequest.start();
+
+                this.updateButtonState('connected');
+                console.log('✅ Conectado via Presentation API');
+                return true;
+            }
+        } catch (error) {
+            console.log('Presentation API não disponível:', error.message);
+        }
+        return false;
+    }
+
+    async createPageCanvas() {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Definir tamanho do canvas baseado na janela
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // Capturar screenshot da página usando html2canvas (se disponível)
+        // ou criar uma representação básica
+        ctx.fillStyle = '#1e1e1e';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Adicionar texto indicando que está sendo transmitido
+        ctx.fillStyle = '#ff0000';
+        ctx.font = '48px Courier New';
+        ctx.textAlign = 'center';
+        ctx.fillText('🏋️ MEU TREINO', canvas.width / 2, canvas.height / 2 - 50);
+        ctx.fillText('Transmitindo para Apple TV', canvas.width / 2, canvas.height / 2 + 50);
+
+        return canvas;
+    }
+
+    fallbackFullscreen() {
+        // Como fallback, entrar em modo tela cheia
+        if (document.documentElement.requestFullscreen) {
+            document.documentElement.requestFullscreen();
+            this.updateButtonState('connected');
+            console.log('📺 Modo tela cheia ativado como alternativa');
+
+            // Mostrar mensagem explicativa
+            this.showInfo('Modo tela cheia ativado. Para Apple TV, use AirPlay do Safari ou Chrome no iOS/Mac');
+        } else {
+            this.showError('Funcionalidade não suportada neste navegador');
+        }
+    }
+
+    updateButtonState(state) {
+        if (!this.airplayButton) return;
+
+        // Remover classes anteriores
+        this.airplayButton.classList.remove('connecting', 'connected');
+
+        switch (state) {
+            case 'available':
+                this.airplayButton.disabled = false;
+                this.airplayButton.innerHTML = '📺 Apple TV';
+                this.airplayButton.title = 'Enviar para Apple TV';
+                break;
+
+            case 'connecting':
+                this.airplayButton.classList.add('connecting');
+                this.airplayButton.disabled = true;
+                this.airplayButton.innerHTML = '⏳ Conectando...';
+                this.airplayButton.title = 'Conectando com Apple TV';
+                break;
+
+            case 'connected':
+                this.airplayButton.classList.add('connected');
+                this.airplayButton.disabled = false;
+                this.airplayButton.innerHTML = '✅ Conectado';
+                this.airplayButton.title = 'Conectado ao Apple TV - Clique para desconectar';
+                this.isConnected = true;
+                break;
+
+            case 'unsupported':
+                this.airplayButton.disabled = true;
+                this.airplayButton.innerHTML = '❌ Não suportado';
+                this.airplayButton.title = 'AirPlay não suportado neste navegador';
+                break;
+        }
+    }
+
+    showError(message) {
+        // Criar notificação de erro temporária
+        this.showNotification(message, 'error');
+    }
+
+    showInfo(message) {
+        // Criar notificação informativa temporária
+        this.showNotification(message, 'info');
+    }
+
+    showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.textContent = message;
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: ${type === 'error' ? '#ff4444' : '#4444ff'};
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            animation: slideIn 0.3s ease-out;
+        `;
+
+        document.body.appendChild(notification);
+
+        // Remover após 4 segundos
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.style.animation = 'slideOut 0.3s ease-in';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }
+        }, 4000);
+    }
+}
+
+// Inicializar o controlador Apple TV
+const appleTVController = new AppleTVController();

@@ -177,6 +177,89 @@ body {
     font-size: 1rem;
 }
 
+/* Controles */
+.controls-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+}
+
+.airplay-button {
+    background: linear-gradient(135deg, #ff0000, #cc0000);
+    border: 2px solid #ff0000;
+    color: white;
+    padding: 12px 24px;
+    font-size: 1.1rem;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+    box-shadow:
+        0 0 15px rgba(255, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.airplay-button:hover {
+    background: linear-gradient(135deg, #ff3333, #ff0000);
+    box-shadow:
+        0 0 25px rgba(255, 0, 0, 0.6),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+.airplay-button:active {
+    transform: translateY(0);
+    box-shadow:
+        0 0 10px rgba(255, 0, 0, 0.4),
+        inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.airplay-button:disabled {
+    background: #666;
+    border-color: #666;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+.airplay-button::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    border-radius: 8px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.airplay-button:hover::before {
+    opacity: 1;
+}
+
+/* Animação de carregamento para quando estiver conectando */
+.airplay-button.connecting {
+    background: linear-gradient(135deg, #ffaa00, #ff8800);
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+/* Estilo quando conectado com sucesso */
+.airplay-button.connected {
+    background: linear-gradient(135deg, #00ff00, #00cc00);
+    border-color: #00ff00;
+}
+
 /* Responsividade para TV */
 @media screen and (max-width: 1200px) {
     .container {
@@ -264,4 +347,31 @@ body {
 @keyframes blink {
     0%, 50% { opacity: 1; }
     51%, 100% { opacity: 0.3; }
+}
+
+/* Notificações */
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+.notification {
+    animation: slideIn 0.3s ease-out;
 }
