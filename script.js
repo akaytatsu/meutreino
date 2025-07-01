@@ -250,8 +250,26 @@ function displayWorkout(workoutData) {
     let currentGroup = '';
     
     workoutData.forEach(exercise => {
-        // Agrupar exercícios por categoria se houver uma coluna de grupo
-        const group = exercise._GROUP || exercise[CONFIG.COLUMNS.GROUP] || exercise.Musculo || 'Exercícios';
+        // Determinar grupo baseado no dia da semana ou categoria
+        const dayValue = exercise._DAY || exercise[CONFIG.COLUMNS.DAY] || '';
+        let group = '';
+        
+        // Definir grupos baseados no dia da semana
+        if (dayValue.toLowerCase().includes('segunda')) {
+            group = 'SEGUNDA - Pernas + Funcional';
+        } else if (dayValue.toLowerCase().includes('terça')) {
+            group = 'TERÇA - Cardio + Boxe';
+        } else if (dayValue.toLowerCase().includes('quarta')) {
+            group = 'QUARTA - Superiores + Core';
+        } else if (dayValue.toLowerCase().includes('quinta')) {
+            group = 'QUINTA - HIIT + Funcional';
+        } else if (dayValue.toLowerCase().includes('sexta')) {
+            group = 'SEXTA - Full Body + Core';
+        } else if (dayValue.toLowerCase().includes('sábado')) {
+            group = 'SÁBADO - Mobilidade';
+        } else {
+            group = 'Treino do Dia';
+        }
         
         if (group !== currentGroup) {
             if (currentGroup !== '') {
@@ -264,22 +282,24 @@ function displayWorkout(workoutData) {
             currentGroup = group;
         }
         
-        const exerciseName = exercise._EXERCISE || exercise[CONFIG.COLUMNS.EXERCISE] || exercise.Nome || 'Exercício';
-        const series = exercise._SERIES || exercise[CONFIG.COLUMNS.SERIES] || exercise.Séries || '';
-        const reps = exercise._REPS || exercise[CONFIG.COLUMNS.REPS] || exercise.Reps || '';
-        const weight = exercise._WEIGHT || exercise[CONFIG.COLUMNS.WEIGHT] || exercise.Carga || '';
-        const rest = exercise._REST || exercise[CONFIG.COLUMNS.REST] || exercise.Rest || '';
+        const exerciseName = exercise._EXERCISE || exercise[CONFIG.COLUMNS.EXERCISE] || 'Exercício';
+        const seriesReps = exercise._SERIES_REPS || exercise[CONFIG.COLUMNS.SERIES_REPS] || '';
+        const video = exercise._VIDEO || exercise[CONFIG.COLUMNS.VIDEO] || '';
         
-        let details = [];
-        if (series) details.push(`${series} séries`);
-        if (reps) details.push(`${reps} repetições`);
-        if (weight) details.push(`${weight} kg`);
-        if (rest) details.push(`${rest} descanso`);
+        // Formatar as séries/reps
+        let formattedSeriesReps = seriesReps;
+        if (seriesReps) {
+            // Melhorar formatação das séries
+            formattedSeriesReps = seriesReps
+                .replace(/x/gi, ' × ')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
         
         html += `
             <div class="exercise">
                 <div class="exercise-name">${exerciseName}</div>
-                <div class="exercise-details">${details.join(' • ')}</div>
+                <div class="exercise-details">${formattedSeriesReps}</div>
             </div>
         `;
     });
@@ -308,31 +328,40 @@ function getDummyWorkoutData() {
     
     const workoutPlans = {
         1: [ // Segunda-feira
-            { Grupo: 'Peito', Exercicio: 'Supino Reto', Series: '4', Repeticoes: '8-12', Peso: '80', Descanso: '2min' },
-            { Grupo: 'Peito', Exercicio: 'Supino Inclinado', Series: '3', Repeticoes: '10-12', Peso: '70', Descanso: '90s' },
-            { Grupo: 'Tríceps', Exercicio: 'Tríceps Pulley', Series: '3', Repeticoes: '12-15', Peso: '40', Descanso: '60s' },
-            { Grupo: 'Tríceps', Exercicio: 'Mergulho', Series: '3', Repeticoes: '10-12', Peso: 'Corporal', Descanso: '90s' }
+            { 'Dia da Semana': 'SEGUNDA', 'Exercício': 'Agachamento com Barra', 'Séries x Reps / Tempo': '3x12' },
+            { 'Dia da Semana': 'SEGUNDA', 'Exercício': 'Afundo com Anilha', 'Séries x Reps / Tempo': '3x10 (cada perna)' },
+            { 'Dia da Semana': 'SEGUNDA', 'Exercício': 'Cadeira Extensora na Polia', 'Séries x Reps / Tempo': '3x15' },
+            { 'Dia da Semana': 'SEGUNDA', 'Exercício': 'Mesa Flexora na Polia', 'Séries x Reps / Tempo': '3x12' },
+            { 'Dia da Semana': 'SEGUNDA', 'Exercício': 'Elevação de Panturrilhas', 'Séries x Reps / Tempo': '3x20' }
         ],
         2: [ // Terça-feira
-            { Grupo: 'Costas', Exercicio: 'Puxada Frente', Series: '4', Repeticoes: '8-12', Peso: '70', Descanso: '2min' },
-            { Grupo: 'Costas', Exercicio: 'Remada Curvada', Series: '3', Repeticoes: '10-12', Peso: '60', Descanso: '90s' },
-            { Grupo: 'Bíceps', Exercicio: 'Rosca Direta', Series: '3', Repeticoes: '12-15', Peso: '30', Descanso: '60s' },
-            { Grupo: 'Bíceps', Exercicio: 'Rosca Martelo', Series: '3', Repeticoes: '10-12', Peso: '25', Descanso: '60s' }
+            { 'Dia da Semana': 'TERÇA', 'Exercício': 'Boxe Técnico (Sombra)', 'Séries x Reps / Tempo': '3 rounds x 2 min' },
+            { 'Dia da Semana': 'TERÇA', 'Exercício': 'Saco de Pancada', 'Séries x Reps / Tempo': '4 rounds x 3 min' },
+            { 'Dia da Semana': 'TERÇA', 'Exercício': 'Burpee Adaptado', 'Séries x Reps / Tempo': '10 reps' },
+            { 'Dia da Semana': 'TERÇA', 'Exercício': 'Escalador', 'Séries x Reps / Tempo': '30s' }
         ],
         3: [ // Quarta-feira
-            { Grupo: 'Pernas', Exercicio: 'Agachamento', Series: '4', Repeticoes: '8-12', Peso: '100', Descanso: '3min' },
-            { Grupo: 'Pernas', Exercicio: 'Leg Press', Series: '3', Repeticoes: '12-15', Peso: '200', Descanso: '2min' },
-            { Grupo: 'Pernas', Exercicio: 'Panturrilha', Series: '4', Repeticoes: '15-20', Peso: '80', Descanso: '60s' }
+            { 'Dia da Semana': 'QUARTA', 'Exercício': 'Supino Reto com Barra', 'Séries x Reps / Tempo': '3x12' },
+            { 'Dia da Semana': 'QUARTA', 'Exercício': 'Remada Baixa na Polia', 'Séries x Reps / Tempo': '3x12' },
+            { 'Dia da Semana': 'QUARTA', 'Exercício': 'Desenvolvimento com Anilhas', 'Séries x Reps / Tempo': '3x10' },
+            { 'Dia da Semana': 'QUARTA', 'Exercício': 'Rosca Direta com Barra', 'Séries x Reps / Tempo': '3x12' }
         ],
         4: [ // Quinta-feira
-            { Grupo: 'Ombros', Exercicio: 'Desenvolvimento', Series: '4', Repeticoes: '8-12', Peso: '50', Descanso: '2min' },
-            { Grupo: 'Ombros', Exercicio: 'Elevação Lateral', Series: '3', Repeticoes: '12-15', Peso: '15', Descanso: '60s' },
-            { Grupo: 'Ombros', Exercicio: 'Elevação Posterior', Series: '3', Repeticoes: '12-15', Peso: '12', Descanso: '60s' }
+            { 'Dia da Semana': 'QUINTA', 'Exercício': 'Polichinelo', 'Séries x Reps / Tempo': '30s' },
+            { 'Dia da Semana': 'QUINTA', 'Exercício': 'Saltos Laterais', 'Séries x Reps / Tempo': '30s' },
+            { 'Dia da Semana': 'QUINTA', 'Exercício': 'Corrida Parada (joelho alto)', 'Séries x Reps / Tempo': '30s' },
+            { 'Dia da Semana': 'QUINTA', 'Exercício': 'Boxe no Saco', 'Séries x Reps / Tempo': '3 rounds x 3 min' }
         ],
         5: [ // Sexta-feira
-            { Grupo: 'Cardio', Exercicio: 'Esteira', Series: '1', Repeticoes: '30min', Peso: 'Moderado', Descanso: '-' },
-            { Grupo: 'Core', Exercicio: 'Prancha', Series: '3', Repeticoes: '60s', Peso: 'Corporal', Descanso: '30s' },
-            { Grupo: 'Core', Exercicio: 'Abdominal', Series: '3', Repeticoes: '20', Peso: 'Corporal', Descanso: '30s' }
+            { 'Dia da Semana': 'SEXTA', 'Exercício': 'Levantamento Terra com Barra', 'Séries x Reps / Tempo': '3x10' },
+            { 'Dia da Semana': 'SEXTA', 'Exercício': 'Supino Inclinado com Barra', 'Séries x Reps / Tempo': '3x12' },
+            { 'Dia da Semana': 'SEXTA', 'Exercício': 'Puxada Alta na Polia', 'Séries x Reps / Tempo': '3x12' },
+            { 'Dia da Semana': 'SEXTA', 'Exercício': 'Agachamento Sumô com Anilha', 'Séries x Reps / Tempo': '3x15' }
+        ],
+        6: [ // Sábado
+            { 'Dia da Semana': 'SÁBADO', 'Exercício': 'Mobilidade Articular', 'Séries x Reps / Tempo': '10 min' },
+            { 'Dia da Semana': 'SÁBADO', 'Exercício': 'Escada de Agilidade', 'Séries x Reps / Tempo': '2x 30s' },
+            { 'Dia da Semana': 'SÁBADO', 'Exercício': 'Alongamentos Ativos', 'Séries x Reps / Tempo': '10 min' }
         ]
     };
     
