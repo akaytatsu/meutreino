@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relógio de Academia - Meu Treino</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Relógio LED -->
+        <div class="clock-container">
+            <div class="led-display">
+                <div class="time-display">
+                    <span id="hours">10</span>:
+                    <span id="minutes">39</span>:
+                    <span id="seconds">42</span>
+                </div>
+                <div class="date-display">
+                    <span id="day">13</span>
+                    <span class="label">DATE</span>
+                    <span id="weekday">MON</span>
+                    <span id="date">20</span>
+                    <span id="year">17</span>
+                    <span class="label">YEAR</span>
+                    <span class="label temp-label">TEMP</span>
+                    <span id="temperature">24</span>°C
+                </div>
+                <div class="indicators">
+                    <div class="alarm-indicator">🕒</div>
+                    <div class="day-indicator">FRI</div>
+                    <div class="timer-indicator">⏰</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seção do Treino -->
+        <div class="workout-container">
+            <h2>🏋️ TREINO DO DIA</h2>
+            <div id="workout-content">
+                <div class="loading">Carregando treino...</div>
+            </div>
+            <div class="workout-date">
+                <span id="workout-date"></span>
+            </div>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
