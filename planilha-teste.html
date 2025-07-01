@@ -1,230 +1,279 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Teste Direto da Planilha</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-            background: #f5f5f5;
-        }
-        .test-section {
-            background: white;
-            margin: 20px 0;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .status {
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 5px;
-            font-weight: bold;
-        }
-        .success { background: #d4edda; color: #155724; }
-        .error { background: #f8d7da; color: #721c24; }
-        .info { background: #d1ecf1; color: #0c5460; }
-        button {
-            background: #007bff;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin: 5px;
-        }
-        button:hover { background: #0056b3; }
-        pre {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 5px;
-            overflow-x: auto;
-            max-height: 300px;
-        }
-        .url-test {
-            font-family: monospace;
-            font-size: 12px;
-            background: #f8f9fa;
-            padding: 5px;
-            margin: 5px 0;
-            border-radius: 3px;
-        }
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        background: #f5f5f5;
+      }
+      .test-section {
+        background: white;
+        margin: 20px 0;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+      .status {
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 5px;
+        font-weight: bold;
+      }
+      .success {
+        background: #d4edda;
+        color: #155724;
+      }
+      .error {
+        background: #f8d7da;
+        color: #721c24;
+      }
+      .info {
+        background: #d1ecf1;
+        color: #0c5460;
+      }
+      button {
+        background: #007bff;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        margin: 5px;
+      }
+      button:hover {
+        background: #0056b3;
+      }
+      pre {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 5px;
+        overflow-x: auto;
+        max-height: 300px;
+      }
+      .url-test {
+        font-family: monospace;
+        font-size: 12px;
+        background: #f8f9fa;
+        padding: 5px;
+        margin: 5px 0;
+        border-radius: 3px;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <h1>🔍 Teste Direto da Planilha Google Sheets</h1>
-    
+
     <div class="test-section">
-        <h2>📊 Informações da Planilha</h2>
-        <div class="info status">
-            <strong>ID da Planilha:</strong> 13yJQe1C_EfBX2EIioDcq1FE4eMGMilsa7ZS2tc87Z7Q<br>
-            <strong>Aba:</strong> Plano de Treino<br>
-            <strong>GID Configurado:</strong> 684511506<br>
-            <strong>Hoje é:</strong> <span id="today"></span>
-        </div>
+      <h2>📊 Informações da Planilha</h2>
+      <div class="info status">
+        <strong>ID da Planilha:</strong>
+        13yJQe1C_EfBX2EIioDcq1FE4eMGMilsa7ZS2tc87Z7Q<br />
+        <strong>Aba:</strong> Plano de Treino<br />
+        <strong>GID Configurado:</strong> 684511506<br />
+        <strong>Hoje é:</strong> <span id="today"></span>
+      </div>
     </div>
 
     <div class="test-section">
-        <h2>🧪 Teste de URLs</h2>
-        <button onclick="testAllUrls()">🚀 Testar Todas as URLs</button>
-        <button onclick="clearResults()">🗑️ Limpar</button>
-        <div id="url-results"></div>
+      <h2>🧪 Teste de URLs</h2>
+      <button onclick="testAllUrls()">🚀 Testar Todas as URLs</button>
+      <button onclick="clearResults()">🗑️ Limpar</button>
+      <div id="url-results"></div>
     </div>
 
     <div class="test-section">
-        <h2>📄 Dados da Planilha</h2>
-        <div id="sheet-data"></div>
+      <h2>📄 Dados da Planilha</h2>
+      <div id="sheet-data"></div>
     </div>
 
     <script>
-        const SHEET_ID = '13yJQe1C_EfBX2EIioDcq1FE4eMGMilsa7ZS2tc87Z7Q';
-        const SHEET_GID = '684511506';
-        
-        // Mostrar dia atual
-        const today = new Date();
-        const weekdays = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
-        document.getElementById('today').textContent = `${weekdays[today.getDay()]} (${today.toLocaleDateString('pt-BR')})`;
+      const SHEET_ID = "13yJQe1C_EfBX2EIioDcq1FE4eMGMilsa7ZS2tc87Z7Q";
+      const SHEET_GID = "684511506";
 
-        async function testAllUrls() {
-            const resultsDiv = document.getElementById('url-results');
-            const sheetDataDiv = document.getElementById('sheet-data');
-            resultsDiv.innerHTML = '<div class="info status">Testando URLs...</div>';
-            
-            const urlsToTest = [
-                {
-                    name: 'CSV Export com GID específico',
-                    url: `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${SHEET_GID}`
-                },
-                {
-                    name: 'CSV Export primeira aba',
-                    url: `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv`
-                },
-                {
-                    name: 'Google Visualization API com GID',
-                    url: `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${SHEET_GID}`
-                },
-                {
-                    name: 'Google Visualization API sem GID',
-                    url: `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`
-                },
-                {
-                    name: 'Teste com GID 0 (primeira aba)',
-                    url: `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`
+      // Mostrar dia atual
+      const today = new Date();
+      const weekdays = [
+        "Domingo",
+        "Segunda",
+        "Terça",
+        "Quarta",
+        "Quinta",
+        "Sexta",
+        "Sábado",
+      ];
+      document.getElementById("today").textContent = `${
+        weekdays[today.getDay()]
+      } (${today.toLocaleDateString("pt-BR")})`;
+
+      async function testAllUrls() {
+        const resultsDiv = document.getElementById("url-results");
+        const sheetDataDiv = document.getElementById("sheet-data");
+        resultsDiv.innerHTML =
+          '<div class="info status">Testando URLs...</div>';
+
+        const urlsToTest = [
+          {
+            name: "CSV Export com GID específico",
+            url: `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${SHEET_GID}`,
+          },
+          {
+            name: "CSV Export primeira aba",
+            url: `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv`,
+          },
+          {
+            name: "Google Visualization API com GID",
+            url: `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${SHEET_GID}`,
+          },
+          {
+            name: "Google Visualization API sem GID",
+            url: `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`,
+          },
+          {
+            name: "Teste com GID 0 (primeira aba)",
+            url: `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`,
+          },
+        ];
+
+        let resultsHtml = "";
+        let successfulData = null;
+
+        for (let i = 0; i < urlsToTest.length; i++) {
+          const test = urlsToTest[i];
+          resultsHtml += `<div class="url-test">Testando: ${test.name}</div>`;
+
+          try {
+            const response = await fetch(test.url, {
+              mode: "cors",
+              headers: {
+                Accept: "text/csv",
+              },
+            });
+
+            if (response.ok) {
+              const text = await response.text();
+
+              if (
+                text &&
+                text.trim().length > 0 &&
+                !text.includes("<!DOCTYPE")
+              ) {
+                resultsHtml += `<div class="success status">✅ ${test.name} - SUCESSO (${text.length} chars)</div>`;
+
+                if (!successfulData) {
+                  successfulData = text;
+                  resultsHtml += `<pre>${text.substring(0, 500)}${
+                    text.length > 500 ? "..." : ""
+                  }</pre>`;
                 }
-            ];
-            
-            let resultsHtml = '';
-            let successfulData = null;
-            
-            for (let i = 0; i < urlsToTest.length; i++) {
-                const test = urlsToTest[i];
-                resultsHtml += `<div class="url-test">Testando: ${test.name}</div>`;
-                
-                try {
-                    const response = await fetch(test.url, { 
-                        mode: 'cors',
-                        headers: {
-                            'Accept': 'text/csv'
-                        }
-                    });
-                    
-                    if (response.ok) {
-                        const text = await response.text();
-                        
-                        if (text && text.trim().length > 0 && !text.includes('<!DOCTYPE')) {
-                            resultsHtml += `<div class="success status">✅ ${test.name} - SUCESSO (${text.length} chars)</div>`;
-                            
-                            if (!successfulData) {
-                                successfulData = text;
-                                resultsHtml += `<pre>${text.substring(0, 500)}${text.length > 500 ? '...' : ''}</pre>`;
-                            }
-                        } else {
-                            resultsHtml += `<div class="error status">❌ ${test.name} - Dados inválidos</div>`;
-                        }
-                    } else {
-                        resultsHtml += `<div class="error status">❌ ${test.name} - HTTP ${response.status}</div>`;
-                    }
-                } catch (error) {
-                    resultsHtml += `<div class="error status">❌ ${test.name} - Erro: ${error.message}</div>`;
-                }
-                
-                resultsDiv.innerHTML = resultsHtml;
-                await new Promise(resolve => setTimeout(resolve, 500)); // Pequena pausa
-            }
-            
-            // Processar dados se encontrou algo
-            if (successfulData) {
-                processSheetData(successfulData);
+              } else {
+                resultsHtml += `<div class="error status">❌ ${test.name} - Dados inválidos</div>`;
+              }
             } else {
-                sheetDataDiv.innerHTML = '<div class="error status">❌ Nenhuma URL funcionou. A planilha pode não estar pública.</div>';
+              resultsHtml += `<div class="error status">❌ ${test.name} - HTTP ${response.status}</div>`;
             }
+          } catch (error) {
+            resultsHtml += `<div class="error status">❌ ${test.name} - Erro: ${error.message}</div>`;
+          }
+
+          resultsDiv.innerHTML = resultsHtml;
+          await new Promise((resolve) => setTimeout(resolve, 500)); // Pequena pausa
         }
-        
-        function processSheetData(csvText) {
-            const sheetDataDiv = document.getElementById('sheet-data');
-            
-            try {
-                // Parse do CSV
-                const lines = csvText.split('\n').filter(line => line.trim());
-                const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
-                
-                let html = `<h3>📋 Estrutura da Planilha</h3>`;
-                html += `<div class="info status">Total de linhas: ${lines.length - 1} | Colunas: ${headers.length}</div>`;
-                html += `<div class="info status">Headers: ${headers.join(' | ')}</div>`;
-                
-                // Procurar por dados de treino para hoje
-                const today = new Date();
-                const weekdays = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
-                const todayName = weekdays[today.getDay()];
-                
-                html += `<h4>🔍 Procurando treino para: ${todayName}</h4>`;
-                
-                let foundWorkout = false;
-                for (let i = 1; i < Math.min(lines.length, 20); i++) {
-                    const values = lines[i].split(',').map(v => v.trim().replace(/"/g, ''));
-                    const rowData = {};
-                    headers.forEach((header, index) => {
-                        rowData[header] = values[index] || '';
-                    });
-                    
-                    // Verificar se esta linha tem treino para hoje
-                    const dayColumn = Object.values(rowData).find(value => 
-                        value && value.toLowerCase().includes(todayName)
-                    );
-                    
-                    if (dayColumn) {
-                        foundWorkout = true;
-                        html += `<div class="success status">✅ Treino encontrado na linha ${i}: ${JSON.stringify(rowData)}</div>`;
-                    } else {
-                        html += `<div style="font-size: 12px; color: #666;">Linha ${i}: ${JSON.stringify(rowData)}</div>`;
-                    }
-                }
-                
-                if (!foundWorkout) {
-                    html += `<div class="error status">❌ Nenhum treino encontrado para ${todayName}</div>`;
-                    html += `<div class="info status">💡 Verifique se há uma coluna com os dias da semana na planilha</div>`;
-                }
-                
-                sheetDataDiv.innerHTML = html;
-                
-            } catch (error) {
-                sheetDataDiv.innerHTML = `<div class="error status">❌ Erro ao processar dados: ${error.message}</div>`;
+
+        // Processar dados se encontrou algo
+        if (successfulData) {
+          processSheetData(successfulData);
+        } else {
+          sheetDataDiv.innerHTML =
+            '<div class="error status">❌ Nenhuma URL funcionou. A planilha pode não estar pública.</div>';
+        }
+      }
+
+      function processSheetData(csvText) {
+        const sheetDataDiv = document.getElementById("sheet-data");
+
+        try {
+          // Parse do CSV
+          const lines = csvText.split("\n").filter((line) => line.trim());
+          const headers = lines[0]
+            .split(",")
+            .map((h) => h.trim().replace(/"/g, ""));
+
+          let html = `<h3>📋 Estrutura da Planilha</h3>`;
+          html += `<div class="info status">Total de linhas: ${
+            lines.length - 1
+          } | Colunas: ${headers.length}</div>`;
+          html += `<div class="info status">Headers: ${headers.join(
+            " | "
+          )}</div>`;
+
+          // Procurar por dados de treino para hoje
+          const today = new Date();
+          const weekdays = [
+            "domingo",
+            "segunda",
+            "terça",
+            "quarta",
+            "quinta",
+            "sexta",
+            "sábado",
+          ];
+          const todayName = weekdays[today.getDay()];
+
+          html += `<h4>🔍 Procurando treino para: ${todayName}</h4>`;
+
+          let foundWorkout = false;
+          for (let i = 1; i < Math.min(lines.length, 20); i++) {
+            const values = lines[i]
+              .split(",")
+              .map((v) => v.trim().replace(/"/g, ""));
+            const rowData = {};
+            headers.forEach((header, index) => {
+              rowData[header] = values[index] || "";
+            });
+
+            // Verificar se esta linha tem treino para hoje
+            const dayColumn = Object.values(rowData).find(
+              (value) => value && value.toLowerCase().includes(todayName)
+            );
+
+            if (dayColumn) {
+              foundWorkout = true;
+              html += `<div class="success status">✅ Treino encontrado na linha ${i}: ${JSON.stringify(
+                rowData
+              )}</div>`;
+            } else {
+              html += `<div style="font-size: 12px; color: #666;">Linha ${i}: ${JSON.stringify(
+                rowData
+              )}</div>`;
             }
+          }
+
+          if (!foundWorkout) {
+            html += `<div class="error status">❌ Nenhum treino encontrado para ${todayName}</div>`;
+            html += `<div class="info status">💡 Verifique se há uma coluna com os dias da semana na planilha</div>`;
+          }
+
+          sheetDataDiv.innerHTML = html;
+        } catch (error) {
+          sheetDataDiv.innerHTML = `<div class="error status">❌ Erro ao processar dados: ${error.message}</div>`;
         }
-        
-        function clearResults() {
-            document.getElementById('url-results').innerHTML = '';
-            document.getElementById('sheet-data').innerHTML = '';
-        }
-        
-        // Testar automaticamente quando a página carregar
-        window.addEventListener('load', () => {
-            setTimeout(testAllUrls, 1000);
-        });
+      }
+
+      function clearResults() {
+        document.getElementById("url-results").innerHTML = "";
+        document.getElementById("sheet-data").innerHTML = "";
+      }
+
+      // Testar automaticamente quando a página carregar
+      window.addEventListener("load", () => {
+        setTimeout(testAllUrls, 1000);
+      });
     </script>
-</body>
+  </body>
 </html>

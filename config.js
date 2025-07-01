@@ -15,7 +15,7 @@ const CONFIG = {
         SERIES_REPS: 'Séries x Reps / Tempo',
         VIDEO: 'Vídeo Demonstrativo'
     },
-    
+
     // Variações alternativas dos nomes das colunas
     COLUMN_VARIATIONS: {
         DAY: ['Dia da Semana', 'Dia', 'Day', 'Weekday'],

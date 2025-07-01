@@ -37,7 +37,7 @@ body {
     border: 8px solid #333;
     border-radius: 15px;
     padding: 2rem;
-    box-shadow: 
+    box-shadow:
         0 0 30px rgba(255, 0, 0, 0.3),
         inset 0 0 20px rgba(0, 0, 0, 0.8);
     position: relative;
@@ -54,7 +54,7 @@ body {
     text-align: center;
     letter-spacing: 0.1em;
     color: #ff0000;
-    text-shadow: 
+    text-shadow:
         0 0 10px #ff0000,
         0 0 20px #ff0000,
         0 0 30px #ff0000;
@@ -103,7 +103,7 @@ body {
     border: 2px solid #ff0000;
     border-radius: 15px;
     padding: 2rem;
-    box-shadow: 
+    box-shadow:
         0 0 20px rgba(255, 0, 0, 0.3),
         inset 0 0 10px rgba(0, 0, 0, 0.5);
     max-height: 80vh;
@@ -183,11 +183,11 @@ body {
         grid-template-columns: 1fr;
         grid-template-rows: auto 1fr;
     }
-    
+
     .time-display {
         font-size: 3rem;
     }
-    
+
     .led-display {
         min-width: 400px;
         min-height: 200px;
