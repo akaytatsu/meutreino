@@ -1211,8 +1211,8 @@ class AppleTVController {
     }
 }
 
-// Inicializar o controlador Apple TV
-const appleTVController = new AppleTVController();
+// Inicializar o controlador Apple TV (desabilitado para otimização de AirPlay)
+// const appleTVController = new AppleTVController();
 
 // Função de debug para testar AirPlay
 function debugAirPlay() {
