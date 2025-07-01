@@ -319,6 +319,12 @@ function displayWorkout(workoutData) {
         day: 'numeric'
     };
     workoutDateElement.textContent = today.toLocaleDateString('pt-BR', options);
+
+    // Garantir visibilidade após exibir conteúdo
+    setTimeout(() => {
+        ensureWorkoutVisibility();
+        detectAirPlayAndOptimize();
+    }, 100);
 }
 
 // Dados de exemplo caso não consiga acessar a planilha
@@ -484,8 +490,22 @@ function init() {
     // Carregar treino do dia
     loadWorkout();
 
+    // Detectar e otimizar para AirPlay/TV
+    detectAirPlayAndOptimize();
+
+    // Garantir visibilidade do treino
+    ensureWorkoutVisibility();
+
     // Recarregar treino a cada intervalo configurado
     setInterval(loadWorkout, CONFIG.WORKOUT.UPDATE_INTERVAL);
+
+    // Reaplicar otimizações após redimensionamento
+    window.addEventListener('resize', () => {
+        setTimeout(() => {
+            detectAirPlayAndOptimize();
+            ensureWorkoutVisibility();
+        }, 100);
+    });
 }
 
 // Iniciar quando a página carregar
@@ -526,16 +546,77 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// Detectar cliques para recarregar (útil para controle remoto da TV)
-let clickCount = 0;
-document.addEventListener('click', function() {
-    clickCount++;
-    setTimeout(() => {
-        if (clickCount === 3) {
-            loadWorkout();
+// Detectar AirPlay e otimizar interface
+function detectAirPlayAndOptimize() {
+    const isLargeScreen = window.screen.width >= 1280 && window.screen.height >= 720;
+    const isTV = window.screen.width >= 1440 ||
+                 window.innerWidth >= 1440 ||
+                 navigator.userAgent.includes('TV') ||
+                 navigator.userAgent.includes('AppleTV');
+
+    if (isLargeScreen || isTV) {
+        console.log('📺 Detectado exibição em TV/AirPlay - Aplicando otimizações');
+
+        // Aplicar classe específica para TV
+        document.body.classList.add('tv-mode');
+
+        // Garantir que o layout seja otimizado
+        const container = document.querySelector('.container');
+        if (container) {
+            container.style.gridTemplateRows = '32vh 1fr';
+            container.style.gap = '1.5rem';
+            container.style.padding = '2rem';
         }
-        clickCount = 0;
-    }, 1000);
+
+        // Otimizar área do treino
+        const workoutContainer = document.querySelector('.workout-container');
+        if (workoutContainer) {
+            workoutContainer.style.maxHeight = 'none';
+            workoutContainer.style.height = '100%';
+            workoutContainer.style.minHeight = '400px';
+            workoutContainer.style.fontSize = '1.1rem';
+        }
+
+        // Ajustar tamanho do relógio
+        const ledDisplay = document.querySelector('.led-display');
+        if (ledDisplay) {
+            ledDisplay.style.width = '60vw';
+            ledDisplay.style.maxWidth = '800px';
+        }
+
+        // Forçar reflow
+        window.setTimeout(() => {
+            window.dispatchEvent(new Event('resize'));
+        }, 100);
+    }
+}
+
+// Função para garantir visibilidade do treino
+function ensureWorkoutVisibility() {
+    const workoutContainer = document.querySelector('.workout-container');
+    const workoutContent = document.getElementById('workout-content');
+
+    if (workoutContainer) {
+        workoutContainer.style.visibility = 'visible';
+        workoutContainer.style.opacity = '1';
+        workoutContainer.style.display = 'flex';
+    }
+
+    if (workoutContent) {
+        workoutContent.style.visibility = 'visible';
+        workoutContent.style.opacity = '1';
+        workoutContent.style.display = 'block';
+    }
+}
+
+// Detectar AirPlay e otimizar interface ao redimensionar
+window.addEventListener('resize', () => {
+    detectAirPlayAndOptimize();
+});
+
+// Detectar AirPlay e otimizar interface na carga inicial
+document.addEventListener('DOMContentLoaded', () => {
+    detectAirPlayAndOptimize();
 });
 
 // Funcionalidade Apple TV / AirPlay

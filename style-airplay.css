@@ -1,0 +1,410 @@
+/* ===============================
+   ESTILO OTIMIZADO PARA AIRPLAY/TV
+   =============================== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: linear-gradient(135deg, #1e1e1e 0%, #2d2d2d 100%);
+    font-family: 'Courier New', monospace;
+    color: #ff0000;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    /* Otimizações específicas para AirPlay/TV */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    zoom: 1;
+}
+
+.container {
+    width: 100vw;
+    height: 100vh;
+    display: grid;
+    grid-template-rows: 30vh 1fr;
+    gap: 1.5rem;
+    padding: 2rem;
+    min-height: 100vh;
+    max-height: 100vh;
+    overflow: hidden;
+}
+
+/* ==================
+   RELÓGIO LED
+   ================== */
+
+.clock-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.led-display {
+    background: #000;
+    border: 6px solid #333;
+    border-radius: 15px;
+    padding: 1.5rem 2rem;
+    box-shadow:
+        0 0 30px rgba(255, 0, 0, 0.3),
+        inset 0 0 20px rgba(0, 0, 0, 0.8);
+    position: relative;
+    width: 60vw;
+    max-width: 800px;
+    min-height: 180px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    margin: 0 auto;
+}
+
+.time-display {
+    font-size: 4rem;
+    font-weight: bold;
+    text-align: center;
+    letter-spacing: 0.1em;
+    color: #ff0000;
+    text-shadow:
+        0 0 10px #ff0000,
+        0 0 20px #ff0000,
+        0 0 30px #ff0000;
+    font-family: 'Courier New', monospace;
+    margin-bottom: 0.8rem;
+}
+
+.date-display {
+    display: grid;
+    grid-template-columns: auto auto auto auto auto auto auto auto auto;
+    gap: 0.4rem;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    color: #ff0000;
+    text-shadow: 0 0 5px #ff0000;
+}
+
+.label {
+    font-size: 0.9rem;
+    color: #ff6666;
+}
+
+.temp-label {
+    margin-left: 1rem;
+}
+
+.indicators {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.8rem;
+    font-size: 1.1rem;
+}
+
+.alarm-indicator,
+.day-indicator,
+.timer-indicator {
+    color: #ff0000;
+    text-shadow: 0 0 5px #ff0000;
+}
+
+/* ==================
+   SEÇÃO DO TREINO
+   ================== */
+
+.workout-container {
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid #ff0000;
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow:
+        0 0 20px rgba(255, 0, 0, 0.3),
+        inset 0 0 10px rgba(0, 0, 0, 0.5);
+    height: 100%;
+    min-height: 400px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    font-size: 1.1rem;
+    /* Garantir visibilidade */
+    position: relative;
+    z-index: 1;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+.workout-container h2 {
+    text-align: center;
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+    color: #ff0000;
+    text-shadow: 0 0 10px #ff0000;
+    border-bottom: 2px solid #ff0000;
+    padding-bottom: 0.5rem;
+    flex-shrink: 0;
+}
+
+.loading {
+    text-align: center;
+    font-size: 1.2rem;
+    color: #ff6666;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.5; }
+    50% { opacity: 1; }
+    100% { opacity: 0.5; }
+}
+
+#workout-content {
+    flex: 1;
+    overflow-y: auto;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+.workout-group {
+    margin-bottom: 2rem;
+    border: 1px solid #ff0000;
+    border-radius: 8px;
+    padding: 1.2rem;
+    background: rgba(255, 0, 0, 0.05);
+}
+
+.workout-group h3 {
+    color: #ff0000;
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    text-shadow: 0 0 5px #ff0000;
+}
+
+.exercise {
+    margin-bottom: 1rem;
+    padding: 0.8rem;
+    border-left: 3px solid #ff0000;
+    background: rgba(255, 0, 0, 0.1);
+}
+
+.exercise-name {
+    font-weight: bold;
+    color: #ff0000;
+    font-size: 1.1rem;
+}
+
+.exercise-details {
+    color: #ff6666;
+    font-size: 0.95rem;
+    margin-top: 0.4rem;
+}
+
+.workout-date {
+    text-align: center;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #ff0000;
+    color: #ff6666;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+/* ==================
+   OTIMIZAÇÕES ESPECÍFICAS
+   ================== */
+
+/* TVs 4K */
+@media screen and (min-width: 1920px) {
+    .container {
+        grid-template-rows: 28vh 1fr;
+        padding: 3rem;
+        gap: 2rem;
+    }
+
+    .led-display {
+        width: 55vw;
+        max-width: 900px;
+        padding: 2rem 2.5rem;
+    }
+
+    .time-display {
+        font-size: 5rem;
+        margin-bottom: 1rem;
+    }
+
+    .date-display {
+        font-size: 1.3rem;
+    }
+
+    .workout-container {
+        padding: 2.5rem;
+        font-size: 1.2rem;
+    }
+
+    .workout-container h2 {
+        font-size: 2.2rem;
+        margin-bottom: 2rem;
+    }
+
+    .workout-group {
+        margin-bottom: 2.5rem;
+        padding: 1.5rem;
+    }
+
+    .workout-group h3 {
+        font-size: 1.5rem;
+        margin-bottom: 1.2rem;
+    }
+
+    .exercise {
+        margin-bottom: 1.2rem;
+        padding: 1rem;
+    }
+
+    .exercise-name {
+        font-size: 1.3rem;
+    }
+
+    .exercise-details {
+        font-size: 1.1rem;
+        margin-top: 0.5rem;
+    }
+}
+
+/* Correção para problemas de zoom */
+@media screen and (min-width: 1440px) {
+    html {
+        font-size: 16px !important;
+        zoom: 1 !important;
+        -webkit-text-size-adjust: 100% !important;
+        text-size-adjust: 100% !important;
+    }
+
+    body {
+        zoom: 1 !important;
+        -webkit-text-size-adjust: 100% !important;
+        text-size-adjust: 100% !important;
+        transform: none !important;
+    }
+}
+
+/* Scrollbar personalizada */
+.workout-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.workout-container::-webkit-scrollbar-track {
+    background: #333;
+    border-radius: 4px;
+}
+
+.workout-container::-webkit-scrollbar-thumb {
+    background: #ff0000;
+    border-radius: 4px;
+    box-shadow: 0 0 5px rgba(255, 0, 0, 0.5);
+}
+
+.workout-container::-webkit-scrollbar-thumb:hover {
+    background: #ff3333;
+}
+
+/* Animações */
+.container {
+    animation: fadeIn 1s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Efeito de piscar para os dois pontos do relógio */
+.time-display span:nth-child(2),
+.time-display span:nth-child(4) {
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0.3; }
+}
+
+/* Modo TV aplicado via JavaScript */
+.tv-mode .container {
+    grid-template-rows: 30vh 1fr !important;
+    gap: 1.5rem !important;
+    padding: 2rem !important;
+}
+
+.tv-mode .led-display {
+    width: 60vw !important;
+    max-width: 800px !important;
+}
+
+.tv-mode .time-display {
+    font-size: 4rem !important;
+}
+
+.tv-mode .workout-container {
+    height: 100% !important;
+    min-height: 400px !important;
+    font-size: 1.1rem !important;
+}
+
+.tv-mode .workout-container h2 {
+    font-size: 1.8rem !important;
+}
+
+.tv-mode .workout-group h3 {
+    font-size: 1.3rem !important;
+}
+
+.tv-mode .exercise-name {
+    font-size: 1.1rem !important;
+}
+
+/* Estilos específicos para dispositivos Apple */
+@supports (-webkit-touch-callout: none) {
+    body {
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+    }
+}
+
+/* Melhorias para macOS Safari */
+@media screen and (-webkit-min-device-pixel-ratio: 2) {
+    .led-display {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+}
+
+/* Responsividade para telas menores (fallback) */
+@media screen and (max-width: 1200px) {
+    .container {
+        grid-template-rows: 35vh 1fr;
+        padding: 1.5rem;
+        gap: 1.5rem;
+    }
+
+    .led-display {
+        width: 70vw;
+        min-height: 180px;
+        padding: 1.5rem;
+    }
+
+    .time-display {
+        font-size: 3.5rem;
+    }
+
+    .workout-container {
+        max-height: 60vh;
+    }
+}
