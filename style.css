@@ -375,3 +375,56 @@ body {
 .notification {
     animation: slideIn 0.3s ease-out;
 }
+
+/* Estilos específicos para dispositivos Apple */
+@supports (-webkit-touch-callout: none) {
+    /* iOS Safari */
+    body {
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .airplay-button {
+        -webkit-appearance: none;
+        appearance: none;
+        -webkit-touch-callout: none;
+    }
+}
+
+/* Melhorias para macOS Safari */
+@media screen and (-webkit-min-device-pixel-ratio: 2) {
+    .led-display {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+}
+
+/* Estilos responsivos para iPhone */
+@media screen and (max-width: 414px) {
+    .container {
+        padding: 1rem;
+        gap: 1rem;
+    }
+
+    .led-display {
+        min-width: 90vw;
+        padding: 2rem;
+        min-height: 200px;
+    }
+
+    .airplay-button {
+        padding: 16px 24px;
+        font-size: 1.2rem;
+        margin: 10px 0;
+    }
+}
+
+/* Estilos para iPad */
+@media screen and (min-width: 768px) and (max-width: 1024px) {
+    .led-display {
+        min-width: 80vw;
+        padding: 2.5rem;
+    }
+}

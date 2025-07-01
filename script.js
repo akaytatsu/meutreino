@@ -558,15 +558,32 @@ class AppleTVController {
     }
 
     checkAirPlaySupport() {
-        // Verificar se o navegador suporta WebKit Presentation API ou Remote Playback API
-        if ('webkitSupportsPresentationMode' in HTMLVideoElement.prototype ||
-            'remote' in HTMLVideoElement.prototype ||
-            navigator.presentation) {
+        // Detectar dispositivos Apple
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        const isMac = /Mac/.test(navigator.userAgent);
+        const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
+
+        // Verificar suporte AirPlay específico para dispositivos Apple
+        if (isIOS || (isMac && isSafari)) {
+            console.log('✅ Dispositivo Apple detectado - AirPlay nativo disponível');
+            this.updateButtonState('available');
+            this.showDeviceInfo(isIOS, isMac);
+        } else if ('webkitSupportsPresentationMode' in HTMLVideoElement.prototype ||
+                   'remote' in HTMLVideoElement.prototype ||
+                   navigator.presentation) {
             console.log('✅ AirPlay/Casting suportado');
             this.updateButtonState('available');
         } else {
             console.log('❌ AirPlay/Casting não suportado neste navegador');
             this.updateButtonState('unsupported');
+        }
+    }
+
+    showDeviceInfo(isIOS, isMac) {
+        if (isIOS) {
+            this.showInfo('📱 iPhone/iPad detectado! Use o botão AirPlay nativo do Safari');
+        } else if (isMac) {
+            this.showInfo('💻 macOS detectado! AirPlay disponível no Safari');
         }
     }
 
@@ -587,6 +604,16 @@ class AppleTVController {
     }
 
     async attemptCasting() {
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        const isMac = /Mac/.test(navigator.userAgent);
+        const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
+
+        // Para dispositivos Apple, priorizar métodos nativos
+        if (isIOS || (isMac && isSafari)) {
+            // Método Apple nativo: Criar elemento de vídeo com AirPlay
+            if (await this.tryAppleNativeAirPlay()) return;
+        }
+
         // Método 1: Tentar WebKit Presentation Mode (Safari)
         if (await this.tryWebKitPresentation()) return;
 
@@ -596,8 +623,96 @@ class AppleTVController {
         // Método 3: Tentar Presentation API
         if (await this.tryPresentationAPI()) return;
 
-        // Fallback: Abrir em tela cheia como alternativa
-        this.fallbackFullscreen();
+        // Fallback específico para Apple
+        if (isIOS || isMac) {
+            this.appleDeviceFallback();
+        } else {
+            this.fallbackFullscreen();
+        }
+    }
+
+    async tryAppleNativeAirPlay() {
+        try {
+            // Criar um vídeo especificamente para AirPlay
+            const video = document.createElement('video');
+            video.controls = true;
+            video.style.width = '100%';
+            video.style.height = '300px';
+            video.style.background = '#000';
+            video.autoplay = true;
+            video.muted = true; // Necessário para autoplay
+
+            // Adicionar atributos específicos do WebKit para AirPlay
+            video.setAttribute('webkit-playsinline', 'true');
+            video.setAttribute('playsinline', 'true');
+            video.setAttribute('webkit-airplay', 'allow');
+            video.setAttribute('controlsList', 'nodownload');
+
+            // Criar um canvas com o conteúdo da página
+            const canvas = await this.createPageCanvas();
+            const stream = canvas.captureStream(30);
+            video.srcObject = stream;
+
+            // Substituir temporariamente o conteúdo do treino pelo vídeo
+            const workoutContent = document.getElementById('workout-content');
+            const originalContent = workoutContent.innerHTML;
+            workoutContent.innerHTML = '';
+            workoutContent.appendChild(video);
+
+            await video.play();
+
+            // Mostrar instruções específicas para Apple
+            this.showAppleInstructions();
+            this.updateButtonState('connected');
+
+            // Restaurar conteúdo após 30 segundos ou quando o usuário clicar novamente
+            const restoreContent = () => {
+                workoutContent.innerHTML = originalContent;
+                this.updateButtonState('available');
+            };
+
+            this.airplayButton.onclick = restoreContent;
+            setTimeout(restoreContent, 30000);
+
+            console.log('✅ AirPlay nativo Apple configurado');
+            return true;
+
+        } catch (error) {
+            console.log('AirPlay nativo Apple falhou:', error.message);
+        }
+        return false;
+    }
+
+    showAppleInstructions() {
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+
+        if (isIOS) {
+            this.showInfo('📱 No vídeo abaixo, toque no ícone AirPlay e selecione sua Apple TV');
+        } else {
+            this.showInfo('💻 No vídeo abaixo, clique no ícone AirPlay e selecione sua Apple TV');
+        }
+    }
+
+    appleDeviceFallback() {
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+
+        if (isIOS) {
+            // Para iOS, mostrar instruções detalhadas
+            this.showInfo('📱 Para AirPlay: Use o Control Center → Espelhamento de Tela → Selecione Apple TV');
+
+            // Entrar em modo tela cheia
+            if (document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen();
+            } else if (document.documentElement.webkitRequestFullscreen) {
+                document.documentElement.webkitRequestFullscreen();
+            }
+        } else {
+            // Para macOS
+            this.showInfo('💻 Para AirPlay: Menu Apple → Preferências do Sistema → Displays → AirPlay Display');
+            this.fallbackFullscreen();
+        }
+
+        this.updateButtonState('connected');
     }
 
     async tryWebKitPresentation() {
