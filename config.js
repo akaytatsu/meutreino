@@ -8,15 +8,20 @@ const CONFIG = {
         API_KEY: '', // Deixe vazio para usar modo público
     },
 
-    // Mapeamento das colunas da planilha
+    // Mapeamento das colunas da planilha (baseado na estrutura real)
     COLUMNS: {
-        DAY: 'Dia',
-        GROUP: 'Grupo',
-        EXERCISE: 'Exercicio',
-        SERIES: 'Series',
-        REPS: 'Repeticoes',
-        WEIGHT: 'Peso',
-        REST: 'Descanso'
+        DAY: 'Dia da Semana',
+        EXERCISE: 'Exercício',
+        SERIES_REPS: 'Séries x Reps / Tempo',
+        VIDEO: 'Vídeo Demonstrativo'
+    },
+    
+    // Variações alternativas dos nomes das colunas
+    COLUMN_VARIATIONS: {
+        DAY: ['Dia da Semana', 'Dia', 'Day', 'Weekday'],
+        EXERCISE: ['Exercício', 'Exercicio', 'Nome', 'Exercise', 'Movement'],
+        SERIES_REPS: ['Séries x Reps / Tempo', 'Series x Reps', 'Sets x Reps', 'Series', 'Reps'],
+        VIDEO: ['Vídeo Demonstrativo', 'Video', 'Link', 'Demonstração']
     },
 
     // Configurações do relógio
