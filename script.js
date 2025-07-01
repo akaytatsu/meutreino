@@ -256,17 +256,17 @@ function displayWorkout(workoutData) {
 
         // Definir grupos baseados no dia da semana
         if (dayValue.toLowerCase().includes('segunda')) {
-            group = 'SEGUNDA - Pernas + Funcional';
+            group = 'SEGUNDA';
         } else if (dayValue.toLowerCase().includes('terça')) {
-            group = 'TERÇA - Cardio + Boxe';
+            group = 'TERÇA';
         } else if (dayValue.toLowerCase().includes('quarta')) {
-            group = 'QUARTA - Superiores + Core';
+            group = 'QUARTA';
         } else if (dayValue.toLowerCase().includes('quinta')) {
-            group = 'QUINTA - HIIT + Funcional';
+            group = 'QUINTA';
         } else if (dayValue.toLowerCase().includes('sexta')) {
-            group = 'SEXTA - Full Body + Core';
+            group = 'SEXTA';
         } else if (dayValue.toLowerCase().includes('sábado')) {
-            group = 'SÁBADO - Mobilidade';
+            group = 'SÁBADO';
         } else {
             group = 'Treino do Dia';
         }
